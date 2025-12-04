@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dbConnection from './config/dbConnection';
 import { authRouter } from './modules/auth/auth.routes';
+import { vehiclesRouter } from './modules/vehicles/vehicles.routes';
 
 const app = express();
 app.use(express.json());
@@ -15,7 +16,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // auth routes
-app.use('/api/v1/auth',authRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/vehicles', vehiclesRouter);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
