@@ -3,6 +3,7 @@ import dbConnection from './config/dbConnection';
 import { authRouter } from './modules/auth/auth.routes';
 import { vehiclesRouter } from './modules/vehicles/vehicles.routes';
 import { usersRouter } from './modules/users/users.routes';
+import { bookingsRouter } from './modules/bookings/bookings.routes';
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/vehicles', vehiclesRouter);
 app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/bookings', bookingsRouter);
 
 app.use((req: Request, res: Response) => {
   return res.status(404).json({

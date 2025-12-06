@@ -22,11 +22,10 @@ const updateUser = async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { name, email, phone, role } = req.body;
   const tokenId = (req.user as JwtPayload).id;
-  console.log(userId,tokenId)
   if (role !== 'admin' && tokenId != userId) {
     return res.status(403).json({
       success: false,
-      message: 'Forbidden: You can update only your own account',
+      message: 'Forbidden: Admin and you can update only your own account',
     });
   }
   try {
@@ -56,7 +55,31 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+const deleteUser = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await usersService.deleteUser(userId!);
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'User deleted successfully',
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const usersController = {
   getAllUsers,
   updateUser,
+  deleteUser,
 };

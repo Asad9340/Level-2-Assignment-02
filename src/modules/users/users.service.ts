@@ -20,10 +20,29 @@ const updateUser = async (
     `,
     [name, email, phone, role, userId]
   );
-  delete result.rows[0].password
+  delete result.rows[0].password;
   return result;
 };
+
+const deleteUser = async (userId: string) => {
+  console.log(userId);
+  const bookingStatus = await pool.query(
+    `
+    SELECT * FROM Bookings WHERE customer_id=$1 AND status='active'
+    `,
+    [userId]
+  );
+  if (bookingStatus.rows.length > 0) {
+    throw new Error('Cannot delete user: User has existing bookings');
+  }
+  const result = await pool.query(`
+    DELETE FROM Users WHERE id=$1
+    `, [userId])
+  return result;
+};
+
 export const usersService = {
   getAllUsers,
   updateUser,
+  deleteUser,
 };
