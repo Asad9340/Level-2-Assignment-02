@@ -12,22 +12,21 @@ const createUser = async (req: Request, res: Response) => {
       role
     );
     if (result.rows.length === 0) {
-      res.status(400).json({
+     return res.status(400).json({
         success: false,
         message: 'Required field is missing',
       });
     }
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      data: result.rows[0],
-    });
+   return res.status(201).json({
+     success: true,
+     message: 'User registered successfully',
+     data: result.rows[0],
+   });
   } catch (error: any) {
-    res.status(500).json({
+   return res.status(500).json({
       success: false,
       message: error.message,
     });
-    return;
   }
 };
 
@@ -35,7 +34,7 @@ const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
     const result = await authServices.loginUser(email, password);
-    res.status(200).json({
+   return res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
@@ -44,11 +43,10 @@ const loginUser = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
-    return;
   }
 };
 

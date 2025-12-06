@@ -11,6 +11,9 @@ const createUsr = async (
   role: string
 ) => {
   const hashedPassword = await bcrypt.hash(password, 10);
+  if (role === null) {
+    role = 'customer';
+  }
   const result = await pool.query(
     `
     INSERT INTO Users (name, email,password,phone,role) VALUES($1,$2,$3,$4,$5) RETURNING *
@@ -36,6 +39,7 @@ const loginUser = async (email: string, password: string) => {
     throw new Error('Invalid credentials');
   }
   const jwtPayload = {
+    id:user.rows[0].id,
     name: user.rows[0].name,
     email: user.rows[0].email,
     phone: user.rows[0].phone,

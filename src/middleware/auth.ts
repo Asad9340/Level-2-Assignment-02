@@ -17,7 +17,7 @@ const auth = (...roles: Role[]) => {
         token,
         config.jwtSecret as string
       ) as JwtPayload;
-      req.user = decode as JwtPayload;
+      req.user = decoded;
       if (roles.length > 0 && !roles.includes(decoded.role as Role)) {
         return res.status(403).json({
           success: false,
