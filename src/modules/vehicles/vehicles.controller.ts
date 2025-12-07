@@ -10,7 +10,7 @@ const createVehicle = async (req: Request, res: Response) => {
     availability_status,
   } = req.body;
   try {
-    if (!vehicle_name || !registration_number || !daily_rent_price) {
+    if (!vehicle_name || !registration_number) {
       return res.status(400).json({
         success: false,
         message:
