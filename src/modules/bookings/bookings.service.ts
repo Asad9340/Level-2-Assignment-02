@@ -22,8 +22,8 @@ const createBooking = async (
   rent_start_date: Date,
   rent_end_date: Date
 ) => {
-  const startDate = new Date(rent_start_date).getTime();
-  const endDate = new Date(rent_end_date).getTime();
+  const startDate = new Date(rent_start_date + 'T00:00:00');
+  const endDate = new Date(rent_end_date + 'T00:00:00');
 
   const userCollection = await pool.query(
     `
@@ -46,7 +46,9 @@ const createBooking = async (
   } else if (vehiclesCollection.rows[0].availability_status !== 'available') {
     throw new Error('This vehicle is already booked');
   }
-  const totalDay = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  const totalDay = Math.ceil(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
   const perDayPrice = vehiclesCollection.rows[0].daily_rent_price;
   const totalPrice = totalDay * perDayPrice;
 
@@ -58,11 +60,14 @@ const createBooking = async (
     [vehicle_id]
   );
 
+  const dateStart = startDate.toISOString().split('T')[0];
+  const dateEnd = endDate.toISOString().split('T')[0];
+
   const result = await pool.query(
     `
     INSERT INTO Bookings (customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status) VALUES ($1,$2,$3,$4,$5,'active') RETURNING *
     `,
-    [customer_id, vehicle_id, rent_start_date, rent_end_date, totalPrice]
+    [customer_id, vehicle_id, dateStart, dateEnd, totalPrice]
   );
 
   return { vehiclesCollection, result };

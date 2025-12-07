@@ -13,8 +13,8 @@ const createBooking = async (req: Request, res: Response) => {
     });
   }
 
-  const startDate = new Date(rent_start_date).getTime();
-  const endDate = new Date(rent_end_date).getTime();
+  const startDate = new Date(rent_start_date + 'T00:00:00').getTime();
+  const endDate = new Date(rent_end_date + 'T00:00:00').getTime();
   if (endDate < startDate) {
     return res.status(400).json({
       success: false,
@@ -33,6 +33,12 @@ const createBooking = async (req: Request, res: Response) => {
       message: 'Booking created successfully',
       data: {
         ...result.rows[0],
+        rent_start_date: new Date(result.rows[0].rent_start_date)
+          .toISOString()
+          .split('T')[0],
+        rent_end_date: new Date(result.rows[0].rent_end_date)
+          .toISOString()
+          .split('T')[0],
         vehicle: {
           vehicle_name: vehiclesCollection.rows[0].vehicle_name,
           daily_rent_price: vehiclesCollection.rows[0].daily_rent_price,
@@ -54,20 +60,27 @@ const getAllBooking = async (req: Request, res: Response) => {
     const email = req.user!.email;
     const id = req.user!.id;
 
-    await bookingService.cancelExpireBooking();
     const result = await bookingService.getAllBooking(role, id, name, email);
-
+    const formattedResult = result.map((booking: any) => ({
+      ...booking,
+      rent_start_date: new Date(booking.rent_start_date)
+        .toISOString()
+        .split('T')[0],
+      rent_end_date: new Date(booking.rent_end_date)
+        .toISOString()
+        .split('T')[0],
+    }));
     if (role === 'admin') {
       return res.status(200).json({
         success: true,
         message: 'Bookings retrieved successfully',
-        data: result,
+        data: formattedResult,
       });
     }
     return res.status(200).json({
       success: true,
       message: 'Your bookings retrieved successfully',
-      data: result,
+      data: formattedResult,
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -87,18 +100,29 @@ const updateBooking = async (req: Request, res: Response) => {
       status,
       role
     );
+    const formattedBooking = {
+      ...result.rows[0],
+      rent_start_date: new Date(result.rows[0].rent_start_date)
+        .toISOString()
+        .split('T')[0],
+      rent_end_date: new Date(result.rows[0].rent_end_date)
+        .toISOString()
+        .split('T')[0],
+    };
     if (role === 'customer') {
       return res.status(200).json({
         success: true,
         message: 'Booking cancelled successfully',
-        data: result.rows[0],
+        data: {
+          formattedBooking,
+        },
       });
     }
     return res.status(200).json({
       success: true,
       message: 'Booking marked as returned. Vehicle is now available',
       data: {
-        ...result.rows[0],
+        ...formattedBooking,
         vehicle: {
           availability_status: updateVehicleStatus.rows[0].availability_status,
         },
