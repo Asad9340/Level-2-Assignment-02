@@ -3,13 +3,14 @@ import { pool } from '../../config/dbConnection';
 const cancelExpireBooking = async () => {
   const result = await pool.query(
     `
-    UPDATE Bookings SET status = 'returned' WHERE status = 'active' AND rent_end_date <  CURRENT_DATE RETURNING *
+    UPDATE Bookings SET status = 'returned' WHERE status='active' AND CURRENT_DATE > rent_end_date
+    RETURNING vehicle_id
     `
   );
   if (result.rows.length === 0) return;
   await pool.query(
     `
-    UPDATE Vehicles SET availability_status = 'available' WHERE id = ANY($1)
+    UPDATE Vehicles SET availability_status='available' WHERE id = ANY($1)
     `,
     [result.rows.map(b => b.vehicle_id)]
   );
@@ -42,8 +43,9 @@ const createBooking = async (
   );
   if (vehiclesCollection.rows.length === 0) {
     throw new Error('Vehicle not found');
+  } else if (vehiclesCollection.rows[0].availability_status !== 'available') {
+    throw new Error('This vehicle is already booked');
   }
-
   const totalDay = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   const perDayPrice = vehiclesCollection.rows[0].daily_rent_price;
   const totalPrice = totalDay * perDayPrice;
@@ -51,7 +53,7 @@ const createBooking = async (
   // update vehicle status
   const updateStatus = await pool.query(
     `
-    UPDATE Vehicles SET availability_status='booked' WHERE id=$1
+    UPDATE Vehicles SET availability_status= 'booked' WHERE id=$1 RETURNING *
     `,
     [vehicle_id]
   );
@@ -127,6 +129,16 @@ const updateBooking = async (
   status: string,
   role: string
 ) => {
+  const bookingAvailable = await pool.query(
+    `
+    SELECT * FROM Bookings WHERE id=$1
+    `,
+    [bookingId]
+  );
+  if (bookingAvailable.rows.length === 0) {
+    throw new Error(`Booking with id ${bookingId} not found`);
+  }
+
   if (role === 'customer' && status === 'cancelled') {
     console.log(bookingId, status, role);
     const result = await pool.query(

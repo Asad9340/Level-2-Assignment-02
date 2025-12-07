@@ -53,7 +53,7 @@ const getAllBooking = async (req: Request, res: Response) => {
     const name = req.user!.name;
     const email = req.user!.email;
     const id = req.user!.id;
-    
+
     await bookingService.cancelExpireBooking();
     const result = await bookingService.getAllBooking(role, id, name, email);
 

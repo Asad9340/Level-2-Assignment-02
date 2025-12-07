@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import jwt, { decode, JwtPayload } from 'jsonwebtoken';
+import jwt, {  JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 
 type Role = 'admin' | 'customer';

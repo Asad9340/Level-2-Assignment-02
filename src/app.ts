@@ -4,6 +4,8 @@ import { authRouter } from './modules/auth/auth.routes';
 import { vehiclesRouter } from './modules/vehicles/vehicles.routes';
 import { usersRouter } from './modules/users/users.routes';
 import { bookingsRouter } from './modules/bookings/bookings.routes';
+import cron from 'node-cron';
+import { bookingService } from './modules/bookings/bookings.service';
 
 const app = express();
 app.use(express.json());
@@ -13,8 +15,13 @@ dbConnection();
 app.get('/', (req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    message: 'Welcome to Assignment Server',
+    message: 'Welcome to Vehicles Booking Assignment Server',
   });
+});
+
+// corn router for auto run
+cron.schedule('0 0 * * *', async () => {
+  await bookingService.cancelExpireBooking();
 });
 
 // auth routes

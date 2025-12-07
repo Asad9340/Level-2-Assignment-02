@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { authServices } from './auth.service';
 
 const createUser = async (req: Request, res: Response) => {
-  const { name, email, password, phone, role } = req.body;
+  let { name, email, password, phone, role } = req.body;
   if (!name || !email || !password || !phone) {
     return res.status(400).json({
       success: false,
@@ -21,7 +21,9 @@ const createUser = async (req: Request, res: Response) => {
       message: 'Email must be in lowercase',
     });
   }
-
+  if (!role) {
+    role = 'customer';
+  }
   if (role !== 'admin' && role !== 'customer') {
     return res.status(400).json({
       success: false,
