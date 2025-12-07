@@ -10,6 +10,35 @@ const createVehicle = async (req: Request, res: Response) => {
     availability_status,
   } = req.body;
   try {
+    if (!vehicle_name || !registration_number || !daily_rent_price) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'vehicle_name and registration_number and daily_rent_price are required',
+      });
+    }
+    if (type !== 'car' && type !== 'bike' && type !== 'van' && type !== 'SUV') {
+      return res.status(400).json({
+        success: false,
+        message: 'type  must be car, bike, van, or SUV',
+      });
+    }
+    if (
+      availability_status !== 'available' &&
+      availability_status !== 'booked'
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'availability_status  must be available or booked',
+      });
+    }
+    if (daily_rent_price <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'daily_rent_price  must be greater than 0',
+      });
+    }
+
     const result = await vehiclesServices.createVehicle(
       vehicle_name,
       type,
@@ -17,12 +46,6 @@ const createVehicle = async (req: Request, res: Response) => {
       daily_rent_price,
       availability_status
     );
-    if (result.rows.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Required field is missing',
-      });
-    }
     return res.status(201).json({
       success: true,
       message: 'Vehicle created successfully',

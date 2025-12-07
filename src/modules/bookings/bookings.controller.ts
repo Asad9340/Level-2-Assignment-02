@@ -4,6 +4,15 @@ import { JwtPayload } from 'jsonwebtoken';
 
 const createBooking = async (req: Request, res: Response) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } = req.body;
+
+  if (!customer_id || !vehicle_id || !rent_start_date || !rent_end_date) {
+    return res.status(400).json({
+      success: false,
+      message:
+        'customer_id, vehicle_id, rent_start_date and rent_end_date are required',
+    });
+  }
+
   const startDate = new Date(rent_start_date).getTime();
   const endDate = new Date(rent_end_date).getTime();
   if (endDate < startDate) {
@@ -44,6 +53,8 @@ const getAllBooking = async (req: Request, res: Response) => {
     const name = req.user!.name;
     const email = req.user!.email;
     const id = req.user!.id;
+    
+    await bookingService.cancelExpireBooking();
     const result = await bookingService.getAllBooking(role, id, name, email);
 
     if (role === 'admin') {

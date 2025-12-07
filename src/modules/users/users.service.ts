@@ -2,8 +2,9 @@ import { pool } from '../../config/dbConnection';
 
 const getAllUsers = async () => {
   const result = await pool.query(`
-    SELECT id, name, email, phone,role FROM Users
+    SELECT * FROM Users
     `);
+  delete result.rows[0].password;
   return result;
 };
 
@@ -25,7 +26,6 @@ const updateUser = async (
 };
 
 const deleteUser = async (userId: string) => {
-  console.log(userId);
   const bookingStatus = await pool.query(
     `
     SELECT * FROM Bookings WHERE customer_id=$1 AND status='active'
@@ -35,9 +35,12 @@ const deleteUser = async (userId: string) => {
   if (bookingStatus.rows.length > 0) {
     throw new Error('Cannot delete user: User has existing bookings');
   }
-  const result = await pool.query(`
+  const result = await pool.query(
+    `
     DELETE FROM Users WHERE id=$1
-    `, [userId])
+    `,
+    [userId]
+  );
   return result;
 };
 

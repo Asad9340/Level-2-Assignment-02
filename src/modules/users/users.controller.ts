@@ -25,7 +25,7 @@ const updateUser = async (req: Request, res: Response) => {
   if (role !== 'admin' && tokenId != userId) {
     return res.status(403).json({
       success: false,
-      message: 'Forbidden: Admin and you can update only your own account',
+      message: 'Forbidden: Admin or you can update only your own account',
     });
   }
   try {

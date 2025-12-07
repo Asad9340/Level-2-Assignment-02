@@ -1,5 +1,19 @@
-import { Request } from 'express';
 import { pool } from '../../config/dbConnection';
+
+const cancelExpireBooking = async () => {
+  const result = await pool.query(
+    `
+    UPDATE Bookings SET status = 'returned' WHERE status = 'active' AND rent_end_date <  CURRENT_DATE RETURNING *
+    `
+  );
+  if (result.rows.length === 0) return;
+  await pool.query(
+    `
+    UPDATE Vehicles SET availability_status = 'available' WHERE id = ANY($1)
+    `,
+    [result.rows.map(b => b.vehicle_id)]
+  );
+};
 
 const createBooking = async (
   customer_id: number,
@@ -9,6 +23,16 @@ const createBooking = async (
 ) => {
   const startDate = new Date(rent_start_date).getTime();
   const endDate = new Date(rent_end_date).getTime();
+
+  const userCollection = await pool.query(
+    `
+    SELECT * FROM Users WHERE id=$1
+    `,
+    [customer_id]
+  );
+  if (userCollection.rows.length === 0) {
+    throw new Error('User not found');
+  }
 
   const vehiclesCollection = await pool.query(
     `
@@ -104,18 +128,20 @@ const updateBooking = async (
   role: string
 ) => {
   if (role === 'customer' && status === 'cancelled') {
-    console.log(bookingId,status,role)
+    console.log(bookingId, status, role);
     const result = await pool.query(
       `
       UPDATE Bookings SET status='cancelled' WHERE id=$1 RETURNING *
       `,
       [bookingId]
     );
+
+    const vehicleId = result.rows[0].vehicle_id;
     const updateVehicleStatus = await pool.query(
       `
-      UPDATE Vehicles SET availability_status='available' WHERE id=$1
+      UPDATE Vehicles SET availability_status='available' WHERE id=$1 RETURNING *
       `,
-      [result.rows[0].vehicle_id]
+      [vehicleId]
     );
     return { result, updateVehicleStatus };
   } else if (role === 'admin' && status === 'returned') {
@@ -128,7 +154,7 @@ const updateBooking = async (
     const vehicleId = result.rows[0].vehicle_id;
     const updateVehicleStatus = await pool.query(
       `
-      UPDATE Vehicles SET availability_status='available' WHERE id=$1
+      UPDATE Vehicles SET availability_status= 'available' WHERE id=$1 RETURNING *
       `,
       [vehicleId]
     );
@@ -142,4 +168,5 @@ export const bookingService = {
   createBooking,
   getAllBooking,
   updateBooking,
+  cancelExpireBooking,
 };
