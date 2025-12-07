@@ -145,7 +145,13 @@ const updateBooking = async (
   }
 
   if (role === 'customer' && status === 'cancelled') {
-    console.log(bookingId, status, role);
+    const booking = bookingAvailable.rows[0];
+    const today = new Date();
+    const rentStart = new Date(booking.rent_start_date);
+    if (today >= rentStart) {
+      throw new Error('You can only cancel a booking before its start date');
+    }
+
     const result = await pool.query(
       `
       UPDATE Bookings SET status='cancelled' WHERE id=$1 RETURNING *

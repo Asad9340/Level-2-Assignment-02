@@ -22,6 +22,12 @@ const createBooking = async (req: Request, res: Response) => {
     });
   }
   try {
+    if (req.user!.role !== 'admin' && customer_id !== req.user!.id) {
+      res.status(200).json({
+        success: false,
+        message:'You are customer and you id not match with customer id'
+      })
+    }
     const { vehiclesCollection, result } = await bookingService.createBooking(
       customer_id,
       vehicle_id,
@@ -74,13 +80,13 @@ const getAllBooking = async (req: Request, res: Response) => {
       return res.status(200).json({
         success: true,
         message: 'Bookings retrieved successfully',
-        data: formattedResult,
+        data: { ...formattedResult },
       });
     }
     return res.status(200).json({
       success: true,
       message: 'Your bookings retrieved successfully',
-      data: formattedResult,
+      data: { ...formattedResult },
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -114,7 +120,7 @@ const updateBooking = async (req: Request, res: Response) => {
         success: true,
         message: 'Booking cancelled successfully',
         data: {
-          formattedBooking,
+          ...formattedBooking,
         },
       });
     }
