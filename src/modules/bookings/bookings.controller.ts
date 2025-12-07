@@ -81,12 +81,12 @@ const updateBooking = async (req: Request, res: Response) => {
   const { bookingId } = req.params;
   const { status } = req.body;
   const role = req.user!.role;
-  const { result, updateVehicleStatus } = await bookingService.updateBooking(
-    bookingId!,
-    status,
-    role
-  );
   try {
+    const { result, updateVehicleStatus } = await bookingService.updateBooking(
+      bookingId!,
+      status,
+      role
+    );
     if (role === 'customer') {
       return res.status(200).json({
         success: true,
