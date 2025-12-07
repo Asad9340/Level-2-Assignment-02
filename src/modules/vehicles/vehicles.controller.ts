@@ -116,7 +116,12 @@ const updateVehicle = async (req: Request, res: Response) => {
       availability_status,
     } = req.body;
     const { vehicleId } = req.params;
-
+    if (daily_rent_price && daily_rent_price <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'daily_rent_price  must be greater than 0',
+      });
+    }
     const result = await vehiclesServices.updateVehicle(
       vehicleId!,
       vehicle_name,
