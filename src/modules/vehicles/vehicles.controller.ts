@@ -14,7 +14,7 @@ const createVehicle = async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message:
-          'vehicle_name and registration_number and daily_rent_price are required',
+          'vehicle_name and registration_number are required',
       });
     }
     if (type !== 'car' && type !== 'bike' && type !== 'van' && type !== 'SUV') {
